@@ -1,0 +1,72 @@
+body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 20px;
+  background-color: #f4f4f4;
+}
+
+.debate-container {
+  max-width: 800px;
+  margin: 0 auto;
+  background-color: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+.debate-input {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.debate-input input, 
+.debate-input select, 
+.debate-input button {
+  padding: 10px;
+  font-size: 16px;
+}
+
+.debate-responses {
+  border-top: 1px solid #eee;
+  padding-top: 20px;
+}
+
+.response-item {
+  background-color: #f9f9f9;
+  margin-bottom: 10px;
+  padding: 10px;
+  position: relative;
+}
+
+.response-item.yes-agent {
+  border-left: 4px solid #4CAF50; /* Green for Yes Agent */
+}
+
+.response-item.no-agent {
+  border-left: 4px solid #F44336; /* Red for No Agent */
+}
+
+.response-item.system-agent {
+  border-left: 4px solid #2196F3; /* Blue for System/Error messages */
+}
+
+.response-item strong {
+  display: block;
+  margin-bottom: 5px;
+  color: #333;
+}
+
+.response-item p {
+  margin: 0;
+  color: #666;
+}
+
+.error-message {
+  background-color: #ffdddd;
+  border: 1px solid #ff0000;
+  color: #ff0000;
+  padding: 10px;
+  margin-bottom: 15px;
+  border-radius: 5px;
+}
