@@ -1,6 +1,3 @@
-import { TwitterClient } from './twitterClient.js';
-const twitterClient = TwitterClient.getInstance();
-
 // Helper function for consistent logging
 const logTwitterEvent = (type, message, error = null, details = null) => {
   const timestamp = new Date().toISOString();
@@ -17,7 +14,7 @@ const logTwitterEvent = (type, message, error = null, details = null) => {
 export const verifyTwitterCredentials = async () => {
   try {
     logTwitterEvent('Auth', 'Loading Twitter client');
-    const client = TwitterClient.getInstance();
+    const client = twitterClient;
     if (!client) {
       throw new Error('Failed to initialize Twitter client');
     }
@@ -40,61 +37,70 @@ export const verifyTwitterCredentials = async () => {
 };
 
 export const postTweet = async (text) => {
-  // Declare tweetChunks at the start of the function scope
-  let tweetChunks = [];
-  
   try {
-    logTwitterEvent('Post', 'Loading Twitter client');
-    const client = TwitterClient.getInstance();
-
-    logTwitterEvent('Post', 'Processing tweet text', null, {
-      textLength: text.length,
-      isThread: text.length > 280
+    logTwitterEvent('Post', 'Initiating tweet post request', null, {
+      textLength: text.length
     });
 
-    // Break tweet into chunks of 280 characters if needed
-    let remainingText = text;
-    
-    while (remainingText.length > 0) {
-      if (remainingText.length <= 280) {
-        tweetChunks.push(remainingText);
-        break;
+    const response = await fetch('/api/twitter/tweet', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ text })
+    });
+
+    if (!response.ok) {
+      let errorData;
+      try {
+        errorData = await response.json();
+      } catch (e) {
+        const rawResponse = await response.text().catch(() => 'Unable to get response text');
+        errorData = {
+          parseError: e.message,
+          rawResponse
+        };
       }
       
-      // Find last space before 280 chars to avoid breaking words
-      let cutoff = remainingText.lastIndexOf(' ', 280);
-      if (cutoff === -1) {
-        logTwitterEvent('Warning', 'No space found for clean break, forcing split at 280 chars');
-        cutoff = 280;
-      }
-      
-      tweetChunks.push(remainingText.substring(0, cutoff));
-      remainingText = remainingText.substring(cutoff + 1);
+      logTwitterEvent('Error', 'Backend API request failed', null, {
+        status: response.status,
+        statusText: response.statusText,
+        errorData,
+        requestUrl: response.url
+      });
+      throw new Error(`HTTP error! status: ${response.status} - ${errorData.error || response.statusText}`);
     }
 
-    logTwitterEvent('Post', `Preparing to post tweets`, null, {
-      numberOfChunks: tweetChunks.length,
-      chunkLengths: tweetChunks.map(chunk => chunk.length)
-    });
-
-    // Post tweets as a thread
-    const postedTweets = await client.createThreadedTweets(tweetChunks);
+    const data = await response.json();
     
-    logTwitterEvent('Complete', `Successfully posted tweets`, null, {
-      numberOfTweets: postedTweets.length,
-      tweetIds: postedTweets.map(tweet => tweet.id),
-      firstTweetId: postedTweets[0]?.id,
-      lastTweetId: postedTweets[postedTweets.length - 1]?.id
-    });
+    // Log the posted tweets
+    if (data.thread) {
+      logTwitterEvent('Success', 'Thread posted successfully', null, {
+        numberOfTweets: data.tweets.length,
+        tweets: data.tweets.map(t => t.text)
+      });
+    } else {
+      logTwitterEvent('Success', 'Tweet posted successfully', null, {
+        tweet: data.text
+      });
+    }
     
-    return postedTweets;
+    return data;
   } catch (error) {
+    const isNetworkError = error.name === 'TypeError' && error.message.includes('fetch');
+    
     logTwitterEvent('Error', 'Failed to post tweet', error, {
       originalTextLength: text.length,
       errorCode: error.code,
       errorType: error.name,
-      attemptedChunks: tweetChunks?.length
+      isNetworkError,
+      errorMessage: error.message
     });
-    throw new Error(`Failed to post tweet: ${error.message}`);
+
+    if (isNetworkError) {
+      throw new Error('Failed to connect to the server. Please check your internet connection.');
+    } else {
+      throw error;
+    }
   }
 };

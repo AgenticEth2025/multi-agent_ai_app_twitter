@@ -1,18 +1,21 @@
-import express from 'express';
-import cors from 'cors';
+import { config } from 'dotenv';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { config } from 'dotenv';
-import fetch from 'node-fetch';
-//import TwitterClient from './src/api/twitterClient.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const isProduction = process.env.NODE_ENV === 'production';
 
-// Load environment variables
+// Load environment variables first
 config({ 
   path: path.resolve(__dirname, '.env.local') 
 });
+
+// Then import other modules
+import express from 'express';
+import cors from 'cors';
+import fetch from 'node-fetch';
+import { ServerTwitterClient } from './src/api/serverTwitterClient.js';
+
+const isProduction = process.env.NODE_ENV === 'production';
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -31,6 +34,15 @@ app.use((req, res, next) => {
   console.log(`[${new Date().toISOString()}] ${req.method} ${req.path}`);
   next();
 });
+
+// Initialize Twitter client once at startup
+let twitterClient = null;
+try {
+  twitterClient = ServerTwitterClient.getInstance();
+  console.log('Twitter client initialized successfully');
+} catch (error) {
+  console.error('Failed to initialize Twitter client:', error);
+}
 
 // API Routes
 app.post('/api/anthropic/messages', async (req, res) => {
@@ -116,37 +128,52 @@ const handleTwitterError = (error, res) => {
 };
 
 // Twitter API endpoints
-/* app.post('/api/twitter/verify', async (req, res) => {
-  try {
-    const client = TwitterClient.getInstance();
-    const result = await client.verifyCredentials();
-    res.json(result);
-  } catch (error) {
-    handleTwitterError(error, res);
+app.post('/api/twitter/tweet', async (req, res) => {
+  if (!twitterClient) {
+    return res.status(503).json({ error: 'Twitter service unavailable' });
   }
-}); */
 
-/* app.post('/api/twitter/tweet', async (req, res) => {
+  console.log('Received request to /api/twitter/tweet');
+  console.log('Request body:', req.body);
+  
   try {
     const { text, reply_to } = req.body;
 
     if (!text) {
+      console.log('Missing required text in request body');
       return res.status(400).json({ error: 'Tweet text is required' });
     }
 
-    const client = TwitterClient.getInstance();
-    const result = await client.createTweet(text, reply_to);
-    
-    res.json({
-      id: result.id,
-      text: result.text,
-      created_at: new Date().toISOString()
-    });
+    console.log('Processing tweet request:', { text, reply_to });
+    const result = await twitterClient.createTweet(text, reply_to);
+    console.log('Tweet posted successfully:', result);
+
+    // Handle both single tweets and threads
+    if (Array.isArray(result)) {
+      // Thread response
+      res.json({
+        thread: true,
+        tweets: result.map(tweet => ({
+          id: tweet.id,
+          text: tweet.text,
+          created_at: new Date().toISOString()
+        }))
+      });
+    } else {
+      // Single tweet response
+      res.json({
+        thread: false,
+        id: result.id,
+        text: result.text,
+        created_at: new Date().toISOString()
+      });
+    }
 
   } catch (error) {
+    console.error('Error in /api/twitter/tweet endpoint:', error);
     handleTwitterError(error, res);
   }
-}); */
+});
 
 // Serve React app in production
 if (isProduction) {
@@ -164,18 +191,17 @@ app.listen(PORT, async () => {
   console.log('ANTHROPIC_API_KEY:', process.env.ANTHROPIC_API_KEY ? 'Present' : 'Missing');
   console.log('TWITTER_API_KEY:', process.env.TWITTER_API_KEY ? 'Present' : 'Missing');
   console.log('TWITTER_ACCESS_TOKEN:', process.env.TWITTER_ACCESS_TOKEN ? 'Present' : 'Missing');
-  
-  // Verify Twitter credentials on startup
-  /* try {
-    const client = TwitterClient.getInstance();
-    const credentials = await client.verifyCredentials();
-    if (credentials.verified) {
-      console.log('\nTwitter API credentials verified successfully');
-      console.log('Authenticated as:', credentials.user.username);
-    } else {
-      console.error('\nFailed to verify Twitter API credentials');
+
+  // Verify Twitter credentials if client was initialized
+  if (twitterClient) {
+    try {
+      const credentials = await twitterClient.verifyCredentials();
+      if (credentials.verified) {
+        console.log('\nTwitter API credentials verified successfully');
+        console.log('Authenticated as:', credentials.user.username);
+      }
+    } catch (error) {
+      console.error('\nFailed to verify Twitter credentials:', error);
     }
-  } catch (error) {
-    console.error('\nError initializing Twitter client:', error);
-  } */
+  }
 });

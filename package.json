@@ -5,11 +5,12 @@
   "scripts": {
     "clean": "rm -rf node_modules dist && npm cache clean --force",
     "start": "node server.js",
-    "dev": "concurrently \"npm run server\" \"npm run client\"",
-    "server": "node server.js",
-    "client": "vite",
+    "dev:server": "node server.js",
+    "dev:client": "vite",
+    "dev": "node dev.js",
     "build": "vite build",
-    "install-all": "npm install"
+    "install-all": "npm install",
+    "verify-env": "node scripts/verify-env.js"
   },
   "dependencies": {
     "axios": "^1.6.8",
