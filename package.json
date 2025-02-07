@@ -9,8 +9,7 @@
     "dev:client": "vite",
     "dev": "node dev.js",
     "build": "vite build",
-    "install-all": "npm install",
-    "verify-env": "node scripts/verify-env.js"
+    "install-all": "npm install"
   },
   "dependencies": {
     "axios": "^1.6.8",

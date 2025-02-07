@@ -36,15 +36,25 @@ export const LLM_PROVIDERS = {
   ANTHROPIC: 'anthropic'
 };
 
+// Get environment variables safely
+const getEnvVar = (key) => {
+  // For client-side env vars, Vite uses import.meta.env
+  if (typeof window !== 'undefined') {
+    return import.meta.env[`VITE_${key}`] || null;
+  }
+  // For server-side env vars, use process.env
+  return process.env[key] || null;
+};
+
 // Default configurations
 const DEFAULT_CONFIG = {
   [LLM_PROVIDERS.OPENAI]: {
-    model: "gpt-4",
+    model: getEnvVar('OPENAI_MODEL') || "gpt-4",
     temperature: 0.7,
     max_tokens: 300
   },
   [LLM_PROVIDERS.ANTHROPIC]: {
-    model: "claude-3-haiku-20240307",
+    model: getEnvVar('ANTHROPIC_MODEL') || "claude-3-haiku-20240307",
     temperature: 0.7,
     max_tokens: 300
   }
@@ -64,6 +74,17 @@ const formatMessages = (messages, provider) => {
 export const sendMessage = async (messages, provider = LLM_PROVIDERS.ANTHROPIC) => {
   try {
     console.log(`Sending message to ${provider}:`, messages);
+
+    // Validate API key presence (not needed on client side since we use the proxy)
+    if (typeof window === 'undefined') {
+      const apiKey = provider === LLM_PROVIDERS.ANTHROPIC 
+        ? getEnvVar('ANTHROPIC_API_KEY')
+        : getEnvVar('OPENAI_API_KEY');
+      
+      if (!apiKey) {
+        throw new Error(`Missing API key for ${provider}`);
+      }
+    }
 
     const endpoint = provider === LLM_PROVIDERS.ANTHROPIC 
       ? '/api/anthropic/messages'
