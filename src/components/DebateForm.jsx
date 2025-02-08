@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { postTweet } from '../api/twitter';
 import { createDebateAgent, getAgentResponse, LLM_PROVIDERS } from '../api/llm';
 import DebateResponses from './DebateResponses';
-import { postToDiscord, getAuthUrl, getGuildChannels } from '../api/discord';
+import { postToDiscord, getGuildChannels } from '../api/discord';
 import './DebateForm.css';
 
 function DebateForm() {
