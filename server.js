@@ -9,6 +9,7 @@ import anthropicRoutes from './src/routes/anthropic.js';
 import twitterRoutes from './src/routes/twitter.js';
 import openaiRoutes from './src/routes/openai.js';
 import discordRoutes from './src/routes/discord.js';
+import contentRoutes from './src/routes/content.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -36,6 +37,7 @@ app.use('/api/anthropic', anthropicRoutes);
 app.use('/api/twitter', twitterRoutes);
 app.use('/api/openai', openaiRoutes);
 app.use('/api/discord', discordRoutes);
+app.use('/api', contentRoutes);
 
 // Serve static files in production
 if (isProduction) {
@@ -46,7 +48,7 @@ if (isProduction) {
 }
 
 // Start server
-app.listen(PORT, () => {
+app.listen(PORT, '0.0.0.0', () => {
   console.log(`Server running on port ${PORT} in ${process.env.NODE_ENV || 'development'} mode`);
   
   // Log environment variables status
@@ -55,4 +57,5 @@ app.listen(PORT, () => {
   console.log('OPENAI_API_KEY:', process.env.OPENAI_API_KEY ? 'Present' : 'Missing');
   console.log('TWITTER_API_KEY:', process.env.TWITTER_API_KEY ? 'Present' : 'Missing');
   console.log('TWITTER_ACCESS_TOKEN:', process.env.TWITTER_ACCESS_TOKEN ? 'Present' : 'Missing');
+  console.log('DISCORD_BOT_TOKEN:', process.env.VITE_DISCORD_BOT_TOKEN ? 'Present' : 'Missing');
 });

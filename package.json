@@ -12,11 +12,16 @@
     "install-all": "npm install"
   },
   "dependencies": {
+    "@mozilla/readability": "^0.5.0",
     "axios": "^1.6.8",
     "concurrently": "^8.2.2",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "express": "^4.19.2",
+    "jsdom": "^26.0.0",
+    "mammoth": "^1.9.0",
+    "multer": "^1.4.5-lts.1",
+    "pdf.js-extract": "^0.2.1",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "twitter-api-v2": "^1.19.1"

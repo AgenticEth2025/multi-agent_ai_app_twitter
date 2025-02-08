@@ -6,8 +6,32 @@ const API_BASE_URL = '/api/discord'; // Use relative URL for proxy
 
 // Helper for making API requests
 const makeRequest = async (method, endpoint, data = null) => {
+  if (!BOT_TOKEN) {
+    console.error('Discord bot token missing');
+    throw new Error('Discord bot token not configured');
+  }
+
   try {
     console.log(`Discord API ${method} request to ${endpoint}`);
+    
+    // Check server health first with retries
+    const maxRetries = 3;
+    let retryCount = 0;
+    while (retryCount < maxRetries) {
+      try {
+        await axios.get(`${API_BASE_URL}/health`);
+        break; // Success, exit retry loop
+      } catch (error) {
+        retryCount++;
+        if (retryCount === maxRetries) {
+          console.error('Server health check failed:', error);
+          throw new Error('Server not accessible after multiple attempts');
+        }
+        console.log(`Retrying server health check (${retryCount}/${maxRetries})...`);
+        await new Promise(resolve => setTimeout(resolve, 1000)); // Wait 1s between retries
+      }
+    }
+
     const response = await axios({
       method,
       url: `${API_BASE_URL}${endpoint}`,
@@ -25,6 +49,8 @@ const makeRequest = async (method, endpoint, data = null) => {
       data: error.response?.data,
       message: error.message,
       endpoint,
+      isAxiosError: error.isAxiosError,
+      config: error.config
     });
     throw new Error(error.response?.data?.message || 'Discord API request failed');
   }
