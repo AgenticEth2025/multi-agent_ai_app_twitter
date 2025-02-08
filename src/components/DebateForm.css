@@ -33,4 +33,167 @@
 .discord-channel-select:disabled {
   background-color: #f5f5f5;
   cursor: not-allowed;
+}
+
+.debate-container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.debate-header {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.debate-header h1 {
+  color: #333;
+  margin-bottom: 10px;
+}
+
+.debate-header p {
+  color: #666;
+  font-size: 0.9em;
+}
+
+.input-group {
+  background: #f8f9fa;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.input-row {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+.topic-input {
+  flex: 1;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 16px;
+  margin-bottom: 15px;
+}
+
+.file-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.file-input-wrapper input[type="file"] {
+  display: none;
+}
+
+.file-button {
+  padding: 10px 15px;
+  background-color: #f0f0f0;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  cursor: pointer;
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.controls-group {
+  background: #f8f9fa;
+  padding: 20px;
+  border-radius: 8px;
+  margin-top: 15px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 20px;
+}
+
+.api-selection {
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.posting-options {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.posting-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  cursor: pointer;
+  padding: 5px;
+  user-select: none;
+}
+
+.discord-controls {
+  margin-left: 25px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+.primary-button {
+  padding: 10px 20px;
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  min-width: 120px;
+  font-weight: 500;
+}
+
+.stop-button {
+  padding: 10px 20px;
+  background-color: #f44336;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  min-width: 120px;
+  font-weight: 500;
+}
+
+.primary-button:disabled,
+.stop-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.clear-file-button {
+  padding: 5px 10px;
+  background-color: #ff4444;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  margin-left: 5px;
+  font-size: 16px;
+  line-height: 1;
+}
+
+.clear-file-button:hover {
+  background-color: #cc0000;
 } 

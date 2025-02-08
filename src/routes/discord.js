@@ -4,6 +4,11 @@ import axios from 'axios';
 const router = express.Router();
 const DISCORD_API = 'https://discord.com/api/v10';
 
+// Verify server is running and connected
+router.get('/health', (req, res) => {
+  res.json({ status: 'ok' });
+});
+
 // Error handler middleware
 const handleDiscordError = (error, res) => {
   console.error('Discord API Error:', {
@@ -20,6 +25,12 @@ const handleDiscordError = (error, res) => {
 
 // Validate request middleware
 const validateRequest = (req, res, next) => {
+  console.log('Validating request headers:', {
+    hasAuth: !!req.headers.authorization,
+    method: req.method,
+    path: req.path
+  });
+  
   if (!req.headers.authorization) {
     return res.status(401).json({ error: 'Authorization header is required' });
   }
@@ -31,6 +42,14 @@ router.get('/channels/:guildId', validateRequest, async (req, res) => {
   try {
     const { guildId } = req.params;
     console.log(`Fetching channels for guild: ${guildId}`);
+    
+    // Verify Discord API is accessible
+    try {
+      await axios.get(`${DISCORD_API}/gateway`);
+    } catch (error) {
+      console.error('Discord API not accessible:', error);
+      return res.status(503).json({ error: 'Discord API not accessible' });
+    }
     
     const response = await axios.get(
       `${DISCORD_API}/guilds/${guildId}/channels`,
