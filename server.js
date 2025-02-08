@@ -8,6 +8,7 @@ import cors from 'cors';
 import anthropicRoutes from './src/routes/anthropic.js';
 import twitterRoutes from './src/routes/twitter.js';
 import openaiRoutes from './src/routes/openai.js';
+import discordRoutes from './src/routes/discord.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -34,6 +35,7 @@ app.use((req, res, next) => {
 app.use('/api/anthropic', anthropicRoutes);
 app.use('/api/twitter', twitterRoutes);
 app.use('/api/openai', openaiRoutes);
+app.use('/api/discord', discordRoutes);
 
 // Serve static files in production
 if (isProduction) {

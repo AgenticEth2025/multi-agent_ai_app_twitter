@@ -27,7 +27,9 @@ const createProcess = (command, args, name) => {
       TWITTER_API_SECRET: process.env.TWITTER_API_SECRET,
       TWITTER_ACCESS_TOKEN: process.env.TWITTER_ACCESS_TOKEN,
       TWITTER_ACCESS_SECRET: process.env.TWITTER_ACCESS_SECRET,
-      TWITTER_BEARER_TOKEN: process.env.TWITTER_BEARER_TOKEN
+      TWITTER_BEARER_TOKEN: process.env.TWITTER_BEARER_TOKEN,
+      VITE_DISCORD_BOT_TOKEN: process.env.VITE_DISCORD_BOT_TOKEN,
+      VITE_DISCORD_GUILD_ID: process.env.VITE_DISCORD_GUILD_ID
     }
   });
 
@@ -52,7 +54,9 @@ const startDevelopment = () => {
     'TWITTER_API_KEY',
     'TWITTER_API_SECRET',
     'TWITTER_ACCESS_TOKEN',
-    'TWITTER_ACCESS_SECRET'
+    'TWITTER_ACCESS_SECRET',
+    'VITE_DISCORD_BOT_TOKEN',
+    'VITE_DISCORD_GUILD_ID'
   ];
 
   const missingVars = requiredVars.filter(varName => !process.env[varName]);

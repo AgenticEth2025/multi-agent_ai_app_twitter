@@ -1,7 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { postTweet } from '../api/twitter';
 import { createDebateAgent, getAgentResponse, LLM_PROVIDERS } from '../api/llm';
 import DebateResponses from './DebateResponses';
+import { postToDiscord, getGuildChannels } from '../api/discord';
+import './DebateForm.css';
 
 function DebateForm() {
   const [topic, setTopic] = useState('');
@@ -9,6 +11,24 @@ function DebateForm() {
   const [debating, setDebating] = useState(false);
   const [responses, setResponses] = useState([]);
   const [error, setError] = useState(null);
+  const [discordChannelId, setDiscordChannelId] = useState('');
+  const [channels, setChannels] = useState([]);
+
+  useEffect(() => {
+    const fetchDiscordChannels = async () => {
+      try {
+        const guildId = import.meta.env.VITE_DISCORD_GUILD_ID;
+        const guildChannels = await getGuildChannels(guildId);
+        setChannels(guildChannels);
+        console.log('Fetched Discord channels:', guildChannels);
+      } catch (error) {
+        console.error('Failed to fetch Discord channels:', error);
+        setError('Failed to fetch Discord channels: ' + error.message);
+      }
+    };
+
+    fetchDiscordChannels();
+  }, []);
 
   const generateDebatePrompt = (isSupporting, topic) => `
     You are an AI debate agent arguing ${isSupporting ? 'in favor of' : 'against'} the following topic: ${topic}. 
@@ -45,13 +65,29 @@ function DebateForm() {
       const noAgent = createDebateAgent('No Agent', 'Critical debater arguing against', apiChoice);
 
       console.log(`Starting debate using ${apiChoice} API`);
+      console.log('Discord channel ID:', discordChannelId);
 
       for (let round = 0; round < 5; round++) {
         // Yes Agent's turn
         try {
           const yesResponse = await getAgentResponse(yesAgent, generateDebatePrompt(true, topic));
           addResponse('Yes Agent', yesResponse.content);
-          await postTweet(`Yes Agent on ${topic}: ${yesResponse.content}`);
+          
+          // Commented out Twitter posting
+          // await postTweet(`Yes Agent on ${topic}: ${yesResponse.content}`);
+          
+          if (discordChannelId) {
+            try {
+              console.log('Posting Yes Agent response to Discord...');
+              await postToDiscord(discordChannelId, `**Yes Agent on "${topic}":**\n${yesResponse.content}`);
+              console.log('Successfully posted Yes Agent response to Discord');
+            } catch (discordError) {
+              console.error('Failed to post to Discord:', discordError);
+              setError(`Discord Error: ${discordError.message}`);
+              // Continue with debate even if Discord posting fails
+            }
+          }
+          
           await new Promise(resolve => setTimeout(resolve, 5000));
         } catch (error) {
           addResponse('Yes Agent', error.message, true);
@@ -62,7 +98,22 @@ function DebateForm() {
         try {
           const noResponse = await getAgentResponse(noAgent, generateDebatePrompt(false, topic));
           addResponse('No Agent', noResponse.content);
-          await postTweet(`No Agent on ${topic}: ${noResponse.content}`);
+          
+          // Commented out Twitter posting
+          // await postTweet(`No Agent on ${topic}: ${noResponse.content}`);
+          
+          if (discordChannelId) {
+            try {
+              console.log('Posting No Agent response to Discord...');
+              await postToDiscord(discordChannelId, `**No Agent on "${topic}":**\n${noResponse.content}`);
+              console.log('Successfully posted No Agent response to Discord');
+            } catch (discordError) {
+              console.error('Failed to post to Discord:', discordError);
+              setError(`Discord Error: ${discordError.message}`);
+              // Continue with debate even if Discord posting fails
+            }
+          }
+          
           await new Promise(resolve => setTimeout(resolve, 5000));
         } catch (error) {
           addResponse('No Agent', error.message, true);
@@ -100,6 +151,23 @@ function DebateForm() {
           <option value={LLM_PROVIDERS.ANTHROPIC}>Anthropic</option>
           <option value={LLM_PROVIDERS.OPENAI}>OpenAI</option>
         </select>
+        <div className="discord-controls">
+          {channels.length > 0 && (
+            <select 
+              value={discordChannelId} 
+              onChange={(e) => setDiscordChannelId(e.target.value)}
+              className="discord-channel-select"
+              disabled={debating}
+            >
+              <option value="">Select Channel</option>
+              {channels.map(channel => (
+                <option key={channel.id} value={channel.id}>
+                  # {channel.name}
+                </option>
+              ))}
+            </select>
+          )}
+        </div>
         <button 
           onClick={handleStartDebate} 
           disabled={debating || !topic}
