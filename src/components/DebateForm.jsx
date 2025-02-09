@@ -296,29 +296,27 @@ function DebateForm() {
                 <input
                   type="checkbox"
                   checked={enableDiscord}
-                  onChange={(e) => setEnableDiscord(e.checked)}
+                  onChange={(e) => setEnableDiscord(e.target.checked)}
                   disabled={debating}
                 />
                 <span>Post to Discord</span>
               </label>
               
-              {enableDiscord && (
+              {enableDiscord && channels.length > 0 && (
                 <div className="discord-controls">
-                  {channels.length > 0 && (
-                    <select 
-                      value={discordChannelId} 
-                      onChange={(e) => setDiscordChannelId(e.target.value)}
-                      className="discord-channel-select"
-                      disabled={debating}
-                    >
-                      <option value="">Select Channel</option>
-                      {channels.map(channel => (
-                        <option key={channel.id} value={channel.id}>
-                          # {channel.name}
-                        </option>
-                      ))}
-                    </select>
-                  )}
+                  <select 
+                    value={discordChannelId} 
+                    onChange={(e) => setDiscordChannelId(e.target.value)}
+                    className="discord-channel-select"
+                    disabled={debating}
+                  >
+                    <option value="">Select Channel</option>
+                    {channels.map(channel => (
+                      <option key={channel.id} value={channel.id}>
+                        # {channel.name}
+                      </option>
+                    ))}
+                  </select>
                 </div>
               )}
             </div>
